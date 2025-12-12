@@ -14,7 +14,7 @@ const agentSchema = new mongoose.Schema({
     trim: true
   }
 }, {
-  timestamps: true  // createdAt, updatedAt automatically add hoga
+  timestamps: true  
 })
 
 module.exports = mongoose.model('Agent', agentSchema)

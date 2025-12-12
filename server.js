@@ -2,9 +2,10 @@ const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
-const leadRoutes = require("./routes/leadRoutes"); // ✨ Add
-const agentRoutes = require("./routes/agentRoutes"); // ✨ Add
+const leadRoutes = require("./routes/leadRoutes"); 
+const agentRoutes = require("./routes/agentRoutes"); 
 
+const app = express();
 
 dotenv.config();
 
@@ -22,15 +23,15 @@ app.use(
 );
 
 
-const app = express();
+
 
 
 app.use(cors());
 app.use(express.json());
 
 
-app.use("/api/leads", leadRoutes); // ✨ Add
-app.use("/api/agents", agentRoutes); // ✨ Add
+app.use("/api/leads", leadRoutes);
+app.use("/api/agents", agentRoutes);
 
 
 app.get("/", (req, res) => {

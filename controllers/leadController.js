@@ -1,12 +1,10 @@
 const Lead = require("../models/Lead");
 
-// @desc    Get all leads (with filters)
-// @route   GET /api/leads
+
 const getLeads = async (req, res) => {
   try {
     const { status, agent, source } = req.query;
 
-    // Build filter object
     let filter = {};
     if (status) filter.leadStatus = status;
     if (agent) filter.assignedAgent = agent;
@@ -19,8 +17,7 @@ const getLeads = async (req, res) => {
   }
 };
 
-// @desc    Get single lead
-// @route   GET /api/leads/:id
+
 const getLead = async (req, res) => {
   try {
     const lead = await Lead.findById(req.params.id);
@@ -33,8 +30,7 @@ const getLead = async (req, res) => {
   }
 };
 
-// @desc    Create new lead
-// @route   POST /api/leads
+
 const createLead = async (req, res) => {
   try {
     const lead = await Lead.create(req.body);
@@ -44,8 +40,7 @@ const createLead = async (req, res) => {
   }
 };
 
-// @desc    Update lead
-// @route   PATCH /api/leads/:id
+
 const updateLead = async (req, res) => {
   try {
     const lead = await Lead.findByIdAndUpdate(req.params.id, req.body, {
@@ -61,8 +56,7 @@ const updateLead = async (req, res) => {
   }
 };
 
-// @desc    Delete lead
-// @route   DELETE /api/leads/:id
+
 const deleteLead = async (req, res) => {
   try {
     const lead = await Lead.findByIdAndDelete(req.params.id);
@@ -75,8 +69,7 @@ const deleteLead = async (req, res) => {
   }
 };
 
-// @desc    Add comment to lead
-// @route   POST /api/leads/:id/comments
+
 const addComment = async (req, res) => {
   try {
     const { author, text } = req.body;
