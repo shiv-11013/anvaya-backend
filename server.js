@@ -16,7 +16,9 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://anvaya-frontend-zeta.vercel.app", 
+      "https://anvaya-frontend-ejbqebbic-shivs-projects-5cdfdbed.vercel.app",
+      "https://anvaya-frontend-2qg1t4b2b-shivs-projects-5cdfdbed.vercel.app",
+      "https://anvaya-frontend-zeta.vercel.app",
     ],
     credentials: true,
   })
