@@ -1,36 +1,30 @@
 # CRM Backend API
 
-Backend API for a CRM (Customer Relationship Management) system built with Node.js, Express.js, MongoDB, JWT Authentication, and Mongoose.
+Backend for Anvaya CRM — Node/Express/MongoDB API that handles auth, leads, agents, and the comment system on top of leads. Paired with the React frontend I built separately.
+
+Compared to KaviosPix, the auth here is simpler (no OAuth, no OTP — just JWT + roles) since the focus for this project was elsewhere: modeling relationships properly (leads → agents → comments), role-based access, and filtering/querying at the API level instead of just dumping everything to the client and filtering there.
 
 ## Features
 
-* User Registration and Login
-* JWT Authentication
-* Protected Routes
-* Role-Based Authorization
-* Lead Management
-* Agent Management
-* Lead Comments System
-* Filtering Leads
-* MongoDB Integration
-* Password Hashing with bcryptjs
-* Global Error Handling
+- Register / login
+- JWT auth on protected routes
+- Role-based authorization — admin vs agent
+- Lead CRUD
+- Agent management
+- Comments on leads
+- Query-based lead filtering (status, agent, source)
+- Passwords hashed with bcryptjs
+- Centralized error handling instead of try/catch scattered everywhere
 
----
+## Stack
 
-# Tech Stack
+- Node.js + Express
+- MongoDB + Mongoose
+- JWT
+- bcryptjs
+- dotenv
 
-* Node.js
-* Express.js
-* MongoDB
-* Mongoose
-* JWT
-* bcryptjs
-* dotenv
-
----
-
-# Project Structure
+## Layout
 
 ```bash
 crm-backend/
@@ -59,37 +53,19 @@ crm-backend/
 │   └── leadRoutes.js
 │
 ├── .env
-├── .gitignore
 ├── server.js
-├── package.json
-├── package-lock.json
-└── README.md
+└── package.json
 ```
 
----
-
-# Installation
-
-## 1. Clone Repository
+## Running it
 
 ```bash
 git clone <your-repository-url>
-```
-
-## 2. Move Into Project Folder
-
-```bash
 cd crm-backend
-```
-
-## 3. Install Dependencies
-
-```bash
 npm install
 ```
 
-## 4. Create .env File
-
+`.env`:
 ```env
 PORT=5000
 MONGO_URI=your_mongodb_connection_string
@@ -97,48 +73,18 @@ JWT_SECRET=your_secret_key
 NODE_ENV=development
 ```
 
----
-
-# Start Server
-
 ```bash
 npm run dev
 ```
 
-or
+Base URL: `http://localhost:5000`
 
-```bash
-node server.js
-```
+## Auth — `/api/auth`
 
----
-
-# API Base URL
-
-```bash
-http://localhost:5000
-```
-
----
-
-# Authentication Routes
-
-Base URL:
-
-```bash
-/api/auth
-```
-
----
-
-## Register User
-
+**Register**
 ```http
 POST /api/auth/register
 ```
-
-### Request Body
-
 ```json
 {
   "name": "Shiv",
@@ -147,111 +93,38 @@ POST /api/auth/register
   "role": "admin"
 }
 ```
+Returns the user plus a JWT.
 
-### Response
-
-```json
-{
-  "_id": "user_id",
-  "name": "Shiv",
-  "email": "shiv@gmail.com",
-  "role": "admin",
-  "token": "jwt_token"
-}
-```
-
----
-
-## Login User
-
+**Login**
 ```http
 POST /api/auth/login
 ```
-
-### Request Body
-
 ```json
-{
-  "email": "shiv@gmail.com",
-  "password": "123456"
-}
+{ "email": "shiv@gmail.com", "password": "123456" }
 ```
 
----
-
-# Agent Routes
-
-Base URL:
-
-```bash
-/api/agents
-```
-
-## Get Agents
+## Agents — `/api/agents`
 
 ```http
-GET /api/agents
-```
-
-## Create Agent
-
-```http
+GET  /api/agents
 POST /api/agents
 ```
-
-### Request Body
-
 ```json
-{
-  "name": "Rahul",
-  "email": "rahul@gmail.com"
-}
+{ "name": "Rahul", "email": "rahul@gmail.com" }
 ```
 
----
-
-# Lead Routes
-
-Base URL:
-
-```bash
-/api/leads
-```
-
----
-
-## Get All Leads
+## Leads — `/api/leads`
 
 ```http
-GET /api/leads
+GET     /api/leads              # supports ?status=, ?agent=, ?source=
+GET     /api/leads/:id
+POST    /api/leads
+PATCH   /api/leads/:id
+DELETE  /api/leads/:id
+POST    /api/leads/:id/comments
 ```
 
-### Query Parameters
-
-```bash
-?status=New
-?agent=Rahul
-?source=Website
-```
-
----
-
-## Get Single Lead
-
-```http
-GET /api/leads/:id
-```
-
----
-
-## Create Lead
-
-```http
-POST /api/leads
-```
-
-### Request Body
-
+**Create lead**
 ```json
 {
   "leadName": "John Doe",
@@ -264,32 +137,7 @@ POST /api/leads
 }
 ```
 
----
-
-## Update Lead
-
-```http
-PATCH /api/leads/:id
-```
-
----
-
-## Delete Lead
-
-```http
-DELETE /api/leads/:id
-```
-
----
-
-## Add Comment To Lead
-
-```http
-POST /api/leads/:id/comments
-```
-
-### Request Body
-
+**Add comment**
 ```json
 {
   "author": "Shiv",
@@ -297,39 +145,23 @@ POST /api/leads/:id/comments
 }
 ```
 
----
+## Protected routes
 
-# Authentication Middleware
-
-Protected routes require JWT token.
-
-### Headers
-
-```bash
+Anything behind `authMiddleware` needs:
+```
 Authorization: Bearer your_jwt_token
 ```
 
----
+## Roles — how access actually splits
 
-# User Roles
+- **Admin** — full access, can manage agents and leads.
+- **Agent** — can work within the CRM (leads) but doesn't get agent-management access.
 
-## Admin
+This is checked in `authMiddleware.js` by decoding the JWT and reading the role off it, then gating specific routes (like agent creation) to admin-only. It's a flat two-role system for now — no granular permissions per action, which is fine at this scale but wouldn't hold up if the CRM needed, say, "agent can edit own leads but not others."
 
-* Full access
-* Can manage agents
-* Can manage leads
+## Models
 
-## Agent
-
-* Can access CRM system
-* Can manage leads
-
----
-
-# Database Models
-
-## User Model
-
+**User**
 ```javascript
 {
   name: String,
@@ -339,10 +171,7 @@ Authorization: Bearer your_jwt_token
 }
 ```
 
----
-
-## Agent Model
-
+**Agent**
 ```javascript
 {
   name: String,
@@ -350,10 +179,7 @@ Authorization: Bearer your_jwt_token
 }
 ```
 
----
-
-## Lead Model
-
+**Lead**
 ```javascript
 {
   leadName: String,
@@ -367,59 +193,28 @@ Authorization: Bearer your_jwt_token
 }
 ```
 
----
+`assignedAgent` is stored as a plain string right now rather than a ref to the Agent model — works fine for the current scale but I'd switch this to a proper `ObjectId` reference with `.populate()` if the app grew, mainly so agent renames don't silently orphan old leads.
 
-# Middleware
+## Middleware, quickly
 
-## authMiddleware.js
+- **authMiddleware.js** — verifies the JWT, attaches the user to the request, and handles the admin-only gate for certain routes.
+- **asyncHandler.js** — small wrapper so I'm not writing try/catch in every single controller; async errors get forwarded to Express's error handling automatically.
+- **errorMiddleware.js** — one place that formats and sends error responses instead of every controller deciding its own error shape.
 
-Handles:
+## What's missing
 
-* JWT verification
-* Protected routes
-* Admin authorization
+- No lead analytics dashboard on the backend side (charts are handled frontend-only right now)
+- No email notifications
+- No file uploads on leads
+- No activity log — can't currently see a history of who changed what
+- No pagination on `/api/leads`, which will matter once there are a lot of leads
+- No dedicated search endpoint — filtering exists but full-text search doesn't
+- No refresh tokens
+- No tests yet — this is probably the thing I should fix first, honestly
+- No Docker setup
 
----
-
-## asyncHandler.js
-
-Handles async route errors automatically.
-
----
-
-## errorMiddleware.js
-
-Global error handler for API errors.
-
----
-
-# Security Features
-
-* JWT Authentication
-* Password Hashing
-* Protected API Routes
-* Role-Based Access
-* MongoDB Validation
-
----
-
-# Future Improvements
-
-* Lead analytics dashboard
-* Email notifications
-* File uploads
-* CRM activity logs
-* Pagination
-* Search functionality
-* Refresh tokens
-* Docker deployment
-* Unit testing
-
----
-
-# Author
+## Author
 
 Shiv Kumar
-
-GitHub:
-[https://github.com/shiv-11013](https://github.com/shiv-11013)
+GitHub: https://github.com/shiv-11013
+Email: shivkumar121112@gmail.com
